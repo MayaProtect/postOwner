@@ -1,31 +1,55 @@
-from uuid import UUID
-import os
-import bson
-import flask
-from flask import Flask, request, jsonify
-from pymongo import MongoClient
-from flask_cors import CORS, cross_origin
+import re
+import bcrypt
+from uuid import uuid4
+from bson.binary import Binary
 
 
-app = Flask(__name__)
-CORS(app)
+class Owner:
+    def __init__(self, request: dict):
+        if type(request["firstname"]) is not str:
+            raise TypeError("Firstname must be a string")
 
-host = os.environ.get("MONGO_HOST", "localhost")
-port = int(os.environ.get("MONGO_PORT", 27017))
+        if len(request["firstname"]) < 3:
+            raise ValueError("Firstname must be longer than 3 characters")
 
-client = MongoClient(host, port)
+        if type(request["lastname"]) is not str:
+            raise TypeError("Lastname must be a string")
 
-db = client[os.environ.get("MONGO_DB", 'mayaprotect')]
-col = db['owners']
+        if len(request["lastname"]) < 3:
+            raise ValueError("Lastname must be longer than 3 characters")
 
-@cross_origin()
-@app.route('/owners/<owner_id>', methods=['POST'])
-def update_owner(owner_id):
-    data = request.get_json()
-    update_selector = {'uuid': bson.Binary.from_uuid(UUID(owner_id))}
-    update_data = {'$push': {'events': [data]}}
-    result = col.update_one(update_selector, update_data)
-    return flask.Response(status=201)
+        if type(request["email"]) is not str:
+            raise TypeError("Email must be a string")
 
+        if self.check_email(request["email"]) is False:
+            raise ValueError("Email must be valid")
 
-app.run(host="0.0.0.0", port=8080, debug=True)
+        self.firstname = request["firstname"]
+        self.lastname = request["lastname"]
+        self.email = request["email"]
+        self.password = request["password"]
+        self.id = uuid4()
+
+    @staticmethod
+    def check_email(email):
+        regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+
+        if re.fullmatch(regex, email):
+            return True
+        else:
+            return False
+
+    def to_save_data(self):
+        return {
+            "uuid": Binary.from_uuid(self.id),
+            "firstname": self.firstname,
+            "lastname": self.lastname,
+            "email": self.email,
+            "password": self.password
+        }
+
+    def to_respond(self):
+        return {
+            "id": str(self.id),
+            "name": self.firstname + " " + self.lastname
+        }

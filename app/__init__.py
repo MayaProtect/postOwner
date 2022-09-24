@@ -1,1 +1,2 @@
-from app.Owner.py import Owner
+from app.owner import Owner
+from app.app import PostOwner
