@@ -1,6 +1,5 @@
-# MayaProtect - Microservice <INSERT NAME>
+# MayaProtect - Microservice PostOwner
 
-<Microservice description>
 <Last build info>
 
 ## How to build
@@ -8,7 +7,7 @@
 ## Usage
 
 ## Contributors
-<firstname> <lastname> - <email>
+Samir Ardjouni - samir.ardjouni@gmail.com
 
 ## Licence
 
